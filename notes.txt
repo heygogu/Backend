@@ -1,0 +1,35 @@
+we temporarily store images on server , in case of the connection loss.
+So that we have them safe,
+and then we can upload them on cloudnary using third process.. entirely depends on the company.
+
+Note:- Git doesn't track empty folder (remember it).
+To track them we can use a file named .gitkeep (just a convention)
+
+.env file - this file have environment variables from systems.. add them to gitignore
+
+Make a new folder src and create files
+  ->app.js 
+  ->constants.js 
+  ->index.js 
+
+We need to create some folders in src too- but let's save that for later or we would require .gitkeep
+
+Let's write some scripts 
+=> "type":"module" inside package.json
+
+we need to start or stop the server frequently , we can use --watch in nodejs or people fav "nodemon"
+install nodemon (when file is saved server restarts), save it as dev Dependency
+
+Dev Dependency => used during development, not in production
+
+"npm i -d nodemon" in your terminal => it creates node_modules folder and dev dependencies in package.json
+
+now ask nodemon to track index.js using a script
+
+=> "dev":"nodemon src/index.js"
+
+There is a conflict between type-module and env variables .. we need to resolve it
+as we need to use require syntax for importing 'dotenv' package.
+
+
+ 
