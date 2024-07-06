@@ -65,3 +65,107 @@ Since Node v20.6.0, node is supporting env file without any 3rd party library (d
     "dev": "nodemon --env-file=.env src/index.js"
   }
 
+Check out the previous commit to check connection
+
+Moving on 
+
+Till now our app.js is empty  - we will incluce express and export the app
+Now go to index.js(outside) 
+
+and setup app.get and app.on
+
+//done
+
+Now explore express docs 
+Request and Response are main
+req.params, req.body 
+Note - bodyparser is not needed explicitely now a days, express have it
+
+Let's discuss cookie-parser(for middleware) package on npm and cors package
+middleware and configs are generally handled using app.use
+
+npm install cookie-parser cors
+
+In app.js
+
+import them 
+and after const app=express(), you can do app.use , see app.js for further info
+
+app.use(cors);
+
+It will do fine , and we can also create a object corsOption{}, for
+setting origin (from which address request will originate from frontend for the backend to accept it)
+
+Now data will come to backend in many ways
+URL, direct jason , body (using forms).
+
+It doesn't mean I will allow infinite json to come on backend
+I need to have limit n all. and some configs also
+
+
+app.use(express.json({limit:"16kb"}))
+
+Previously we needed body parser for this .
+
+For file handling on backend we use multer.
+
+=> I need data from URL too -
+  URL have anomalies sometimes like
+   URL have special encoder (for ex converting / to %20)
+   We need to configure express for this
+
+   app.use(express.urlencoded({extended:true}))
+
+   extended:true => is for allowing nested objects if needed
+
+
+app.use(express.static("public")) => to handle local assets from public folder
+like local images, file etc . It makes it easy to access
+
+cookieParser is there to access and set cookies inside user's browsers
+
+There are ways to put secure cookies in user's browsers (can be handled by server only)
+app.use(cookieParser());
+
+
+What is a middleware ?
+
+Let's ay user hits URL /instagram 
+I will do (re,res) and send the response using res.send() or res.json();
+
+This is pretty straightforward.
+
+Server will get many requests , but what if I want to apply checks on user's request
+This checking is called Middleware.
+
+like
+a) check if user is logged in or not
+//can be multiple checks too (multiple middleware)
+b) check if user is admin.
+
+There is a sequence for setting up middlewares too
+
+*******
+And Mind Boggling fact , (res,req) are not the only two , there are actually 4 elements
+
+(err,req,res,next)
+
+next is a flag , when first check(middlewware) is done it passes the flag to next check saying my work is done and so on
+
+and finally next passed to server then next flag would be discarded
+
+
+We will talk with database so many times , so it doesn't make sense to write connection logic 
+everywhere , so we will create a generalize wrapper of db/index.js and make a util out of it
+
+checkout asyncHandler in utils
+//done
+
+Now I want to standarize API Error and API response , it will make response or error in same
+format , makes it convinient
+
+Search Nodejs API Error on google
+Node provides an Error Class
+
+make ApiError.js in utils
+
