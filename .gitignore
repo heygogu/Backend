@@ -71,8 +71,13 @@ web_modules/
 # Output of 'npm pack'
 *.tgz
 
+#safe check
+.gitignore
 # Yarn Integrity file
 .yarn-integrity
+
+.prettierrc
+.prettierignore
 
 # dotenv environment variables file
 .env

@@ -31,5 +31,37 @@ now ask nodemon to track index.js using a script
 There is a conflict between type-module and env variables .. we need to resolve it
 as we need to use require syntax for importing 'dotenv' package.
 
+install dotenv, mongoose, express
+##############
+Database Connection ==> Important
+You should know the ways of creating Database, about errors , features, security and all.
 
+We will use mongoDB.
+
+Go to MongoDB Atlas (subservice of mongoDB) , provides online Database
+>>>> done 
+
+Ways to connect 
+1) all code in index.js and execute database function immediately
+2) connection function in DB folder and import in index.js file
+
+Important:->
+-> there can be problem while connecting to db so wrap try and catch
+-> database is always is in another continent i.e takes time i.e async await
+
+Now,
+mongoose connect database in one line,
+but we shouldn't connect in one line
+
+when you change somthing in env file you need to manually start server even for nodemon
  
+
+
+
+Since Node v20.6.0, node is supporting env file without any 3rd party library (dotenv). You have to just add --env-file in your script tag in package.json. So, your script tag will look like:
+
+  "scripts": {
+    "start": "node --env-file=.env src/index.js",
+    "dev": "nodemon --env-file=.env src/index.js"
+  }
+
