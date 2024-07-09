@@ -1,11 +1,8 @@
 //read the below one first
 //using promises
 
-const asyncHandler = (requestHandler) => {
-  (req, res, next) => {
-    Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
-  };
-};
+const asyncHandler = (requestHandler) => (req, res, next) =>
+  Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
 
 //create a method ad export
 //it is a higher order function
@@ -29,4 +26,4 @@ const asyncHandler = (requestHandler) => {
 //     }
 // }
 
- export { asyncHandler };
+export { asyncHandler };

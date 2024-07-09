@@ -107,7 +107,7 @@ app.use(express.json({limit:"16kb"}))
 
 Previously we needed body parser for this .
 
-For file handling on backend we use multer.
+For file handling configs on backend we use multer.
 
 => I need data from URL too -
   URL have anomalies sometimes like
@@ -131,7 +131,7 @@ app.use(cookieParser());
 What is a middleware ?
 
 Let's ay user hits URL /instagram 
-I will do (re,res) and send the response using res.send() or res.json();
+I will do (req,res) and send the response using res.send() or res.json();
 
 This is pretty straightforward.
 
@@ -143,7 +143,7 @@ a) check if user is logged in or not
 //can be multiple checks too (multiple middleware)
 b) check if user is admin.
 
-There is a sequence for setting up middlewares too
+There is a sequence for setting up multiple middlewares too
 
 *******
 And Mind Boggling fact , (res,req) are not the only two , there are actually 4 elements
@@ -156,7 +156,8 @@ and finally next passed to server then next flag would be discarded
 
 
 We will talk with database so many times , so it doesn't make sense to write connection logic 
-everywhere , so we will create a generalize wrapper of db/index.js and make a util out of it
+everywhere , so we will create a generalize function of this wrapper of db/index.js and make a util out of it
+Whenever you need to execute this , give it to me , I will execute it and give you the resultts back
 
 checkout asyncHandler in utils
 //done
@@ -169,3 +170,170 @@ Node provides an Error Class
 
 make ApiError.js in utils
 
+Now , next video 
+
+Making two models , user and video in models
+
+as they are tightly coupled (see in model chart )
+
+We don't write user id in User model as mongodb automatically saves
+user with an id bson() data not json(),
+avatar and coverimage will be uploaded on a third party service which will give URLs.
+
+In video model , id will be handled by mongoDB, and for video => third party service,
+owner is interesting have reference to user
+
+User have a history method attribute will will have reference to video
+
+
+write user model:-
+If I want to make a field searchable using a optimizable way, 
+then make it's index true (although it is a little expensive but not that much)
+
+I am having password as string..as we should encrypt it , we will do it later
+
+Although mongodb allows you that you can store small media files inside cluster only.
+But it is not a good practice.
+
+//creating video model
+duration will be provided by cloudinary only.. as it sends metadata too,
+done..
+
+
+There will be basic mongoDB queries but we will use one more thing
+A package - mongoose-aggregate-paginate-v2
+This helps in writing aggregation queries.
+
+It is the true power house for mongoDB.
+checkout Aggregation Pipeline on MongoDB.
+
+npm i mongoose-aggregate-paginate...
+It injects as a plugin normally.
+use it in Video for now.. 
+after import we need to use it before export.
+videoSchema have a lot of methods , go to mongoose docs -> mongoose -> Middleware 
+Here are plugins like pre (just before saving), post(just after saving data)
+There is a option for custom plugin
+
+This aggregation framework came late in mongoDB , so we add it with plugin
+
+videoSchema.plugin(mongooseAggregatePaginate)
+
+Now we can write aggregate Queries here (not normal one (can do them too))
+
+
+Let's go back to User to discuss a few things
+
+go to NPM 
+
+bcrypt package - package based core node js library
+bcrypt js package - optimized bcrypt in plain js with zero dependencies. compatible with bcrypt.
+
+We will use bcrypt.
+
+They almost have same work. 
+
+bcrypt helps in hashing the password.
+
+Now , talking about token , we can use JWT 
+
+NPM -> jsonwebtoken
+
+explore jwt.io and see the tokens where you can see encoded string
+Three Parts:-
+Header -> Automatically Injected , tell about the although
+*Payload -> Whatever data you are sending , gets encrypted after getting embedded into it
+Verification Signature -> contains a secret check which actually protect everything
+
+NPM -> jsonwebtoken -- Install both bcrypt and it
+
+Now go to user file and import them .
+
+Now , direct encryption is not possible , to do so 
+we need some hooks from mongoose
+Go to Middlware (mongoose)-> Pre (execute just before saving data(can have any code ))
+It accepts an event , can check them out on mongoose,
+I need before save , so use "save" event
+And it accepts a callback , (don't use callback as they don't have this reference)
+
+But we need context here.
+
+As encryption takes time , so make it async
+
+and one more thing , access of next , after this work is done pass the next flag inside function params
+
+Now we can encrypt password like this
+
+userSchema.pre("save",async function (next){
+    this.password=bcrypt.hash(this.password,10)
+    next()
+    //10 is the number of hash rounds 
+})
+
+Now there is a problem , whenever data gets saved password will be saved and encrypt.
+
+Password will keep on changing. 
+
+So , I want this code to run only if I send the code of password field.
+If password it not modified , don't encrypt again.
+Only do it , first time, update or new password.
+So we need a if condition
+
+userSchema.pre("save", async function (next) {
+  // if(this.isModified("password")){
+  //     this.password=bcrypt.hash(this.password,10)
+  //     next()
+  // }
+
+  if (!this.isModified("password")) return next();
+
+  this.password = bcrypt.hash(this.password, 10);
+  next();
+  //10 is the number of hash rounds
+});
+
+
+Now I want to import some methods here , so when we are importing User, we can ask if password is
+encrypted or not.
+We can design custom method using .methods on userSchema,
+
+Now I need jwt too.
+What is this ?
+->It is a bearer token ,
+  something that bears it , we assume that they are correct
+
+Anyone who sends me this token , I will send data to it. So manage it carefully
+Explore more on github
+
+Can add a time for token expiry too . and much more 
+It has a sign method which helps to send secret.
+
+We need to utilize the environment variable for it
+In production grade we write complex strings in front of 
+ACCESS_TOKEN_SECRET 
+ can be generated using sha256 etc etc .
+
+
+ACCESS_TOKEN_SECRET=123
+
+ACCESS_TOKEN_EXPIRY=1d;
+
+//means 1 day
+
+REFRESH_TOKEN_SECRET=123
+REFRESH_TOKEN_EXPIRY=10d
+
+//refresh token expiry is always more .
+
+But there is a refreshToken in User not Access Token ??
+We will go with sesion and cookies
+
+Our Access Token will not be stored in database, but refreshToken will be stored
+
+Going back to User Model,
+
+We can make a method for access token generation using .methods
+
+Note -> We can inject any number of functions in our schema
+
+Refresh Token have less info , syntax is same
